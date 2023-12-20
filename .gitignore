@@ -24,3 +24,5 @@ yarn-error.log*
 
 # Yarn lock file
 yarn.lock
+
+src/common/chatboxreact-6ec36-firebase-adminsdk-9hp6z-2fa4e286a5.json
