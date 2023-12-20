@@ -5,9 +5,17 @@ import bodyParser from 'body-parser';
 import http from 'http'; // Thêm thư viện http
 import { Server } from 'socket.io'; // Thêm thư viện socket.io
 import { Routers } from './src/routes/index.js';
-// import { checkToken } from './src/middleware/checkToken.js';
+import { checkToken } from './src/middleware/checkToken.js';
+import admin from 'firebase-admin';
+import serviceAccount from './src/common/chatboxreact-6ec36-firebase-adminsdk-9hp6z-2fa4e286a5.json' assert { type: 'json' };
 
 dotenv.config();
+// Khởi tạo Firebase Admin SDK
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: 'https://chatboxreact-6ec36-default-rtdb.firebaseio.com/',
+});
+
 const app = express();
 const server = http.createServer(app); // Sử dụng http để tạo server cho socket.io
 const io = new Server(server, {
@@ -19,7 +27,7 @@ const io = new Server(server, {
 }); // Tạo đối tượng socket.io
 
 app.use(cors());
-// app.use(checkToken);
+app.use(checkToken);
 const port = process.env.PORT ?? '8081';
 const limit = { limit: '50mb' };
 app.use(bodyParser.json(limit));
@@ -32,7 +40,7 @@ server.listen(port, () => {
 const MAX_USERS = 2;
 const rooms = new Map();
 
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
     const { roomID } = socket.handshake.query;
 
     if (!roomID || !rooms.has(roomID) || rooms.get(roomID).connectedUsers < MAX_USERS) {
@@ -45,23 +53,41 @@ io.on('connection', (socket) => {
         rooms.get(roomID).connectedUsers++;
         console.log(`A user connected to room ${roomID}. Total users: ${rooms.get(roomID).connectedUsers}`);
 
-        // Gửi thông báo cho tất cả người dùng trong phòng
-        // io.to(roomID).emit('message', 'A new user connected.');
+        // Nhận tin nhắn từ Firebase khi người dùng kết nối vào phòng
+        const messagesSnapshot = await admin.database().ref(`rooms/${roomID}/messages`).once('value');
+        const messages = messagesSnapshot.val() || [];
+
+        console.log(messages);
+
+        // Gửi tin nhắn từ Firebase cho người dùng mới kết nối
+        socket.emit('message', messages);
 
         // Tham gia phòng
         socket.join(roomID);
 
         // Lắng nghe sự kiện từ client trong phòng
-        socket.on('message', (data) => {
+        socket.on('message', async (data) => {
             console.log(`Received message in room ${roomID}:`, data);
-            io.to(roomID).emit('message', data); // Gửi tin nhắn tới tất cả người dùng trong phòng
+
+            // Lưu tin nhắn vào Firebase Realtime Database
+            const messageRef = admin.database().ref(`rooms/${roomID}/messages`).push();
+            const messageData = {
+                text: data.text,
+                sender: data.sender,
+                timestamp: admin.database.ServerValue.TIMESTAMP,
+            };
+
+            await messageRef.set(messageData);
+
+            // Gửi tin nhắn tới tất cả người dùng trong phòng
+            io.to(roomID).emit('message', {messageData});
+            console.log('a', messageData);
         });
 
         // Lắng nghe sự kiện khi người dùng ngắt kết nối trong phòng
         socket.on('disconnect', () => {
             rooms.get(roomID).connectedUsers--;
             console.log(`User disconnected from room ${roomID}. Total users: ${rooms.get(roomID).connectedUsers}`);
-            // io.to(roomID).emit('message', 'A user disconnected.');
         });
     } else {
         // Từ chối kết nối mới vì đã đạt đến số lượng người dùng tối đa trong phòng
