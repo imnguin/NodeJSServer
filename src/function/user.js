@@ -1,14 +1,27 @@
 import { MongoData } from "../common/mongo.js";
 import apiresult from '../model/apiresult.js'
+
 const search = async (req) => {
     try {
         await MongoData.connect();
         await MongoData.createdWithCollection('user');
-        var data = await MongoData.get(req);
+        const data = await MongoData.get(req);
         await MongoData.disConnect();
         return new apiresult(false, 'lấy danh sách thành công', 'lấy danh sách thành công', data);
     } catch (error) {
         return new apiresult(true, 'Lỗi lấy danh sách', error.message);
+    }
+}
+
+const load = async (req) => {
+    try {
+        await MongoData.connect();
+        await MongoData.createdWithCollection('user');
+        const data = await MongoData.get(req);
+        await MongoData.disConnect();
+        return new apiresult(false, 'lấy thông tin thành công!', 'lấy thông tin thành công!', data[0]);
+    } catch (error) {
+        return new apiresult(true, 'Lỗi lấy thông tin nhân viên', error.message);
     }
 }
 
@@ -28,9 +41,7 @@ const update = async (req) => {
     try {
         await MongoData.connect();
         await MongoData.createdWithCollection('user');
-        var filter = {
-            username : req.username
-        }
+        var filter = { username: req.username }
         await MongoData.update(req, filter);
         return new apiresult(false, 'Cập nhật thành công', 'Cập nhật thành công');
     } catch (error) {
@@ -44,7 +55,7 @@ const deleted = async (req) => {
     try {
         await MongoData.connect();
         await MongoData.createdWithCollection('user');
-        var filter = {username : req.username}
+        var filter = { username: req.username }
         await MongoData.deleted(filter);
         await MongoData.disConnect();
         return new apiresult(false, 'Xóa thành công', 'Xóa thành công');
@@ -57,5 +68,6 @@ export const userFunc = {
     search,
     insert,
     update,
-    deleted
+    deleted,
+    load
 }

@@ -7,6 +7,7 @@ const path = '/api/user';
 router.post('/add', userController.insert);
 router.post('/update', userController.update);
 router.post('/search',  userController.search);
+router.post('/load',  userController.load);
 router.post('/delete', userController.deleted);
 
 export const userRouter = {

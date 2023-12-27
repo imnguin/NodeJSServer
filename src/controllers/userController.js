@@ -1,7 +1,13 @@
 import { userFunc } from '../function/user.js';
 
 const search = async (req, res) => {
-    var data = await userFunc.search(req.body);
+    const data = await userFunc.search(req.body);
+    res.send(data);
+}
+
+const load = async (req, res) => {
+    const data = await userFunc.load(req.body);
+    console.log(data);
     res.send(data);
 }
 
@@ -21,5 +27,6 @@ export const userController = {
     insert,
     search,
     update,
-    deleted
+    deleted,
+    load
 }
