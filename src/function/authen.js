@@ -3,50 +3,54 @@ import apiresult from "../model/apiresult.js";
 import { userFunc } from "./user.js";
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { googleSheet } from "./googleSheet.js";
+
 dotenv.config();
 import fs from 'fs';
 
-const path = "D:/Server/";
+const path = "E:/Server/";
 
 const login = async (req) => {
-	console.log('req', req);
-    var filter = {
-        username : req.username
-    }
-    var user = await userFunc.search(filter);
-    if(!user.iserorr)
-    {
-		console.log('user', user);
-        const md5Hash = hashMD5(req.password);
-        if(user.resultObject && user.resultObject.length > 0)
-        {
-            console.log(user.resultObject[0].password, md5Hash);
-            if(user.resultObject[0].password == md5Hash)
-            {
-                const accessToken = genarateAccessToken(user.resultObject[0]);
-				const refeshToken = genarateRefreshToken(user.resultObject[0]);
+    await googleSheet.getDataggSheet();
+    // console.log(req)
+	// console.log('req', req);
+    // var filter = {
+    //     username : req.username
+    // }
+    // var user = await userFunc.search(filter);
+    // if(!user.iserorr)
+    // {
+	// 	console.log('user', user);
+    //     const md5Hash = hashMD5(req.password);
+    //     if(user.resultObject && user.resultObject.length > 0)
+    //     {
+    //         console.log(user.resultObject[0].password, md5Hash);
+    //         if(user.resultObject[0].password == md5Hash)
+    //         {
+    //             const accessToken = genarateAccessToken(user.resultObject[0]);
+	// 			// const refeshToken = genarateRefreshToken(user.resultObject[0]);
 				
-                const resultUser = {
-                    ...user.resultObject[0], 
-                    accessToken
-                }
-                delete resultUser.password;
-                return new apiresult(false, 'Đăng nhập thành công!', 'Đăng nhập thành công!', resultUser);
-            }
-            else
-            {
-                return new apiresult(true, 'Đăng nhập không thành công!', 'Sai mật khẩu');
-            }
-        }
-        else
-        {
-            return new apiresult(true, 'Đăng nhập không thành công!', 'User name không tồn tại')
-        }
-    }
-    else
-    {
-        return new apiresult(true, 'Lỗi đăng nhập', user.messagedetail)
-    }
+    //             const resultUser = {
+    //                 ...user.resultObject[0], 
+    //                 accessToken
+    //             }
+    //             delete resultUser.password;
+    //             return new apiresult(false, 'Đăng nhập thành công!', 'Đăng nhập thành công!', resultUser);
+    //         }
+    //         else
+    //         {
+    //             return new apiresult(true, 'Đăng nhập không thành công!', 'Sai mật khẩu');
+    //         }
+    //     }
+    //     else
+    //     {
+    //         return new apiresult(true, 'Đăng nhập không thành công!', 'User name không tồn tại')
+    //     }
+    // }
+    // else
+    // {
+    //     return new apiresult(true, 'Lỗi đăng nhập', user.messagedetail)
+    // }
 }
 
 const refeshToken = async (req) => {
