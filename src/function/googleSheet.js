@@ -35,12 +35,15 @@ const getDataggSheet = async () => {
         const rows = response.data.values;
         const data = convert(rows);
         if (data.length) {
-            console.log(data)
+            // console.log(data)
+            return data
         } else {
             console.log('No data found.');
+            return [];
         }
     } catch (error) {
         console.error('Error accessing Google Sheets:', error);
+        return []
     }
 }
 

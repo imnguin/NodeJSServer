@@ -6,14 +6,19 @@ dotenv.config();
 const connectString = process.env.MONGO_URI ?? "";
 const dbName = process.env.DBNAME_MONGO ?? "";
 const MongoClient = mongodb.MongoClient;
-let client;
-let db;
-let collection;
+let client = null;
+let db = null;
+let collection = null;
 
 const connect = async () => {
+    if (client && client.isConnected()) {
+        console.log('Already connected to MongoDB');
+        return;
+    }
     try {
-        client = await MongoClient.connect(connectString);
+        client = await MongoClient.connect(connectString, { useNewUrlParser: true, useUnifiedTopology: true });
         db = client.db(dbName);
+        console.log('Successfully connected to MongoDB');
     } catch (error) {
         console.error('Error connecting to MongoDB:', error);
         throw error;
@@ -24,6 +29,10 @@ const disConnect = async () => {
     try {
         if (client) {
             await client.close();
+            client = null;
+            db = null;
+            collection = null;
+            console.log('Successfully disconnected from MongoDB');
         }
     } catch (error) {
         console.error('Error closing MongoDB connection:', error);
@@ -32,8 +41,12 @@ const disConnect = async () => {
 };
 
 const createdWithCollection = async (collectionName) => {
-    if (!collection) {
-        collection = await db.collection(collectionName);
+    if (!db) {
+        throw new Error('Database not initialized. Call connect before createdWithCollection.');
+    }
+    if (!collection || collection.collectionName !== collectionName) {
+        collection = db.collection(collectionName);
+        console.log(`Collection ${collectionName} selected`);
     }
 };
 
@@ -41,17 +54,28 @@ const get = async (query = {}) => {
     if (!collection) {
         throw new Error('Collection not initialized. Call createdWithCollection before get.');
     }
-    return await collection.find(query).toArray();
+    try {
+        return await collection.find(query).toArray();
+    } catch (error) {
+        console.error('Error retrieving data from MongoDB:', error);
+        throw error;
+    }
 };
 
 const insert = async (object) => {
     if (!collection) {
         throw new Error('Collection not initialized. Call createdWithCollection before insert.');
     }
-    if (object instanceof Array) {
-        await collection.insertMany(object);
-    } else {
-        await collection.insertOne(object);
+    try {
+        if (Array.isArray(object)) {
+            await collection.insertMany(object);
+        } else {
+            await collection.insertOne(object);
+        }
+        console.log('Data successfully inserted');
+    } catch (error) {
+        console.error('Error inserting data into MongoDB:', error);
+        throw error;
     }
 };
 
@@ -59,15 +83,27 @@ const update = async (object, filter, upsert = true) => {
     if (!collection) {
         throw new Error('Collection not initialized. Call createdWithCollection before update.');
     }
-    const newvalues = { $set: object };
-    await collection.updateOne(filter, newvalues, { upsert });
+    try {
+        const newvalues = { $set: object };
+        await collection.updateOne(filter, newvalues, { upsert });
+        console.log('Data successfully updated');
+    } catch (error) {
+        console.error('Error updating data in MongoDB:', error);
+        throw error;
+    }
 };
 
 const deleted = async (filter) => {
     if (!collection) {
         throw new Error('Collection not initialized. Call createdWithCollection before delete.');
     }
-    await collection.deleteOne(filter);
+    try {
+        await collection.deleteOne(filter);
+        console.log('Data successfully deleted');
+    } catch (error) {
+        console.error('Error deleting data from MongoDB:', error);
+        throw error;
+    }
 };
 
 export const MongoData = {
