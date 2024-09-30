@@ -5,7 +5,7 @@ const login = async (req, res) => {
 }
 
 const refeshToken = async (req, res) => {
-	res.send(await authenFunc.refeshToken(req.body));
+	res.send(await authenFunc.refeshToken(req));
 }
 
 export const authenController = {

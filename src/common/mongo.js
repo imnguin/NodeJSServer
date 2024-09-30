@@ -62,6 +62,18 @@ const get = async (query = {}) => {
     }
 };
 
+const findOne = async (query = {}) => {
+    if (!collection) {
+        throw new Error('Collection not initialized. Call createdWithCollection before get.');
+    }
+    try {
+        return await collection.findOne(query);
+    } catch (error) {
+        console.error('Error retrieving data from MongoDB:', error);
+        throw error;
+    }
+};
+
 const insert = async (object) => {
     if (!collection) {
         throw new Error('Collection not initialized. Call createdWithCollection before insert.');
@@ -106,12 +118,27 @@ const deleted = async (filter) => {
     }
 };
 
+const withMongo = async (collectionName, callback) => {
+    try {
+        await connect();
+        await createdWithCollection(collectionName);
+        const result = await callback();
+        return result;
+    } catch (error) {
+        throw error;
+    } finally {
+        await disConnect();
+    }
+}
+
 export const MongoData = {
     connect,
     disConnect,
     createdWithCollection,
     get,
+    findOne,
     insert,
     update,
-    deleted
+    deleted,
+    withMongo
 };

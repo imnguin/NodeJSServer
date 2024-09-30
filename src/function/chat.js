@@ -1,23 +1,21 @@
 import { MongoData } from "../common/mongo.js";
 import apiresult from '../model/apiresult.js';
 
-const loadAllByUser = async (req) => {
+const insert = async (req) => {
     try {
-        await MongoData.connect();
-        await MongoData.createdWithCollection('message');
-        const data = await MongoData.get(req);
-        return new apiresult(false, 'Lấy danh sách tin nhắn thành công!', 'Lấy danh sách tin nhắn thành công!', data);
+        const newMessage = {
+            chatId: req.chatId,
+            senderId: req.senderId,
+            text: req.text,
+            timestamp: new Date(),
+        };
+        await MongoData.withMongo('message', () => MongoData.insert(newMessage));
+        return new apiresult(false, 'Lưu tin nhắn thành công!', 'Lưu tin nhắn thành công!', newMessage);
     } catch (error) {
-        return new apiresult(true, 'Lỗi lấy danh sách tin nhắn!', error.message);
-    } finally {
-        await MongoData.disConnect();
+        return new apiresult(true, 'Lỗi lưu tin nhắn!', error.message);
     }
 }
 
-const newMessage = async (req) => {
-    
-}
-
 export const chatFunc = {
-    loadAllByUser
+    insert
 }
