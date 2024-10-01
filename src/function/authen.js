@@ -32,7 +32,7 @@ const login = async (req) => {
 
 const refeshToken = async (req) => {
     try {
-        const token = req.headers?.token.split(' ')[1];
+        const token = req.headers?.Authorization.split(' ')[1];
         if (token) {
             const result = jwt.verify(token, process.env.JWT_REFESH_KEY, (err, user) => {
                 if (err) {

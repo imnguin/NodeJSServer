@@ -7,7 +7,7 @@ export const checkToken = (req, res, next) => {
         return
     }
     else {
-        const token = req.headers?.token;
+        const token = req.headers?.Authorization;
         if (!!token) {
             const accessToken = token.split(' ')[1];
             
