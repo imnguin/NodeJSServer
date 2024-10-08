@@ -13,11 +13,11 @@ const login = async (req) => {
         if (user.resultObject) {
             if (password == user.resultObject.password) {
                 const accessToken = genarateAccessToken(user.resultObject);
-                const refeshToken = genarateRefreshToken(user.resultObject);
+                const refreshToken = genarateRefreshToken(user.resultObject);
                 const result = {
                     ...user.resultObject,
                     accessToken,
-                    refeshToken
+                    refreshToken
                 };
                 delete result.password;
                 return new apiresult(false, 'Đăng nhập thành công!', 'Đăng nhập thành công!', result);
@@ -43,7 +43,7 @@ const refeshToken = async (req) => {
                 return new apiresult(false, 'Ok', 'Ok', {
                     ...user,
                     accessToken: newaccessToken,
-                    refeshToken: newrefeshToken
+                    refreshToken: newrefeshToken
                 });
             });
 
