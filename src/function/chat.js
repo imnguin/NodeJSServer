@@ -16,6 +16,57 @@ const insert = async (req) => {
     }
 }
 
+const saveChat = async (req) => {
+    try {
+        const roomChat = await MongoData.withMongo('chats', () => MongoData.findOne({ chatId : '188197-120788' }));
+        if(!roomChat) {
+            const room = {
+                chatId : '188197-120788',
+                members : ['188197', '120788'],
+                type : 'direct',
+                lastMessage: {
+                    messageId: "123",
+                    content: req.content,
+                    senderId: req.senderId,
+                    timestamp: new Date()
+                },
+            };
+            await MongoData.withMongo('chats', () => MongoData.insert(room));
+        }
+        const message = {
+            "chatId": "188197-120788",
+            "senderId": req.senderId,
+            "content": req.content,
+            "messageId" : '123'
+        }
+        await MongoData.withMongo('message', () => MongoData.insert(message));
+        return new apiresult(false, 'ok', 'ok', null);
+    } catch (error) {
+        return new apiresult(true, 'Lỗi lưu tin nhắn!', error.message);
+    }
+}
+
+const loadChatsByUser = async (req) => {
+    try {
+        const data = await MongoData.withMongo('chats', () => MongoData.get(req));
+        return new apiresult(false, 'Lấy thông tin thành công!', 'Lấy thông tin thành công!', data);
+    } catch (error) {
+        return new apiresult(true, 'Lỗi lấy thông tin!', error.message);
+    }
+}
+
+const loadMessageByChatId = async (req) => {
+    try {
+        const data = await MongoData.withMongo('message', () => MongoData.get(req));
+        return new apiresult(false, 'Lấy thông tin thành công!', 'Lấy thông tin thành công!', data);
+    } catch (error) {
+        return new apiresult(true, 'Lỗi lấy thông tin!', error.message);
+    }
+}
+
 export const chatFunc = {
-    insert
+    insert,
+    saveChat,
+    loadChatsByUser,
+    loadMessageByChatId
 }

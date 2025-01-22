@@ -6,7 +6,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const login = async (req) => {
-    console.log(req)
     const { username, password } = req;
     const user = await userFunc.load({ username });
     if (!user.iserror) {
@@ -31,31 +30,26 @@ const login = async (req) => {
 }
 
 const refeshToken = async (req) => {
+    console.log('gọi lại hàm res')
     try {
-        const token = req.headers?.Authorization.split(' ')[1];
-        if (token) {
-            const result = jwt.verify(token, process.env.JWT_REFESH_KEY, (err, user) => {
-                if (err) {
-                    return new apiresult(true, 'Error refesh token', err);
-                }
-                const newaccessToken = genarateAccessToken(user);
-                const newrefeshToken = genarateRefreshToken(user);
-                return new apiresult(false, 'Ok', 'Ok', {
-                    ...user,
-                    accessToken: newaccessToken,
-                    refreshToken: newrefeshToken
-                });
-            });
+        const token = req.headers?.authorization?.split(' ')[1];
+        if (!token) {
+            return new apiresult(true, 'Refresh token không tồn tại!', 'Vui lòng đăng nhập lại.', null, 401);
+        }
 
-            return result;
-        }
-        else {
-            return new apiresult(true, 'Authen doesnt exist!');
-        }
-    } catch (ex) {
-        return new apiresult(true, 'Error refesh token', ex.message);
+        const user = jwt.verify(token, process.env.JWT_REFESH_KEY);
+        const newAccessToken = genarateAccessToken(user);
+        const newRefreshToken = genarateRefreshToken(user);
+
+        return new apiresult(false, 'Refresh token thành công!', 'Ok', {
+            ...user,
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken
+        });
+    } catch (error) {
+        return new apiresult(true, 'Refresh token thất bại!', error.message, null, 401);
     }
-}
+};
 
 const genarateAccessToken = (user) => {
     const accessToken = jwt.sign({
@@ -64,7 +58,7 @@ const genarateAccessToken = (user) => {
     },
         process.env.JWT_ACCESS_KEY,
         {
-            expiresIn: '1d'
+            expiresIn: '1m'
         });
 
     return accessToken;
