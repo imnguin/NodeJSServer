@@ -7,7 +7,6 @@ const search = async (req, res) => {
 
 const load = async (req, res) => {
     const data = await userFunc.load(req.body);
-    console.log(data);
     res.send(data);
 }
 

@@ -20,7 +20,6 @@ const load = async (req) => {
 }
 
 const insert = async (req) => {
-    console.log(req)
     try {
         const user = { ...req, createdAt: new Date() };
         await MongoData.withMongo('user', () => MongoData.insert(user));

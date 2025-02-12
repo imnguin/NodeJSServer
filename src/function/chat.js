@@ -18,7 +18,6 @@ const insert = async (req) => {
 
 const saveChat = async (req) => {
     try {
-        console.log('lưu tin nhắn', req)
         await MongoData.withMongo('message', () => MongoData.insert(req));
         return new apiresult(false, 'ok', 'ok', null);
     } catch (error) {
@@ -37,8 +36,6 @@ const loadChatsByUser = async (req) => {
 
 const loadMessageByChatId = async (req) => {
     try {
-
-        console.log('loadMessageByChatId', req)
         const data = await MongoData.withMongo('message', () => MongoData.get(req));
         return new apiresult(false, 'Lấy thông tin thành công!', 'Lấy thông tin thành công!', data);
     } catch (error) {

@@ -12,15 +12,12 @@ let collection = null;
 
 const connect = async () => {
     if (client && client.isConnected()) {
-        console.log('Already connected to MongoDB');
         return;
     }
     try {
         client = await MongoClient.connect(connectString, { useNewUrlParser: true, useUnifiedTopology: true });
         db = client.db(dbName);
-        console.log('Successfully connected to MongoDB');
     } catch (error) {
-        console.error('Error connecting to MongoDB:', error);
         throw error;
     }
 };
@@ -32,10 +29,8 @@ const disConnect = async () => {
             client = null;
             db = null;
             collection = null;
-            console.log('Successfully disconnected from MongoDB');
         }
     } catch (error) {
-        console.error('Error closing MongoDB connection:', error);
         throw error;
     }
 };
@@ -46,7 +41,6 @@ const createdWithCollection = async (collectionName) => {
     }
     if (!collection || collection.collectionName !== collectionName) {
         collection = db.collection(collectionName);
-        console.log(`Collection ${collectionName} selected`);
     }
 };
 
@@ -57,7 +51,6 @@ const get = async (query = {}) => {
     try {
         return await collection.find(query).toArray();
     } catch (error) {
-        console.error('Error retrieving data from MongoDB:', error);
         throw error;
     }
 };
@@ -69,7 +62,6 @@ const findOne = async (query = {}) => {
     try {
         return await collection.findOne(query);
     } catch (error) {
-        console.error('Error retrieving data from MongoDB:', error);
         throw error;
     }
 };
@@ -84,9 +76,7 @@ const insert = async (object) => {
         } else {
             await collection.insertOne(object);
         }
-        console.log('Data successfully inserted');
     } catch (error) {
-        console.error('Error inserting data into MongoDB:', error);
         throw error;
     }
 };
@@ -98,9 +88,7 @@ const update = async (object, filter, upsert = true) => {
     try {
         const newvalues = { $set: object };
         await collection.updateOne(filter, newvalues, { upsert });
-        console.log('Data successfully updated');
     } catch (error) {
-        console.error('Error updating data in MongoDB:', error);
         throw error;
     }
 };
@@ -111,9 +99,7 @@ const deleted = async (filter) => {
     }
     try {
         await collection.deleteOne(filter);
-        console.log('Data successfully deleted');
     } catch (error) {
-        console.error('Error deleting data from MongoDB:', error);
         throw error;
     }
 };
