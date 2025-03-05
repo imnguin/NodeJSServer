@@ -33,6 +33,7 @@ io.on('connection', (socket) => {
 
 	socket.on('sendMessage', (data) => {
 		const respone = chatFunc.saveChat(data);
+		console.log('saveChat', respone)
 		io.to(data.roomId).emit('receiveMessage', data)
 	});
 
